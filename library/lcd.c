@@ -1,6 +1,6 @@
 /*
  * ***************************************************************
- * file		    : lcd.c
+ * 	file		: lcd.c
  *  authors		: Elisa Bacelar, Gabriel Araújo
  *  date        : 09/29/20
  *  modified	: 09/29/20
@@ -35,7 +35,17 @@ const uint8_t lcd_row_positions[] = {0,2,1,3};
 static void lcd_load(DisplayLCD* lcd, uint8_t data, uint8_t time, LoadMode mode);
 
 ///************************************** Function definitions **************************************/
-// header das funções
+
+/**
+  * @brief Creates a new DisplayLCD
+  * @param[port] Ports of the 4 input data pins
+  * @param[pin] Input pins
+  * @param[rs_port] Port of the RS input pin
+  * @param[rs_pin] RS input pin
+  * @param[en_port] Port of the EN input pin
+  * @param[en_pin] EN input pin
+  * @retval An object of DisplayLCD
+  */
 DisplayLCD lcd_generate(GPIO_Port port[],GPIO_Pin pin[],
 GPIO_Port rs_port,GPIO_Pin rs_pin,GPIO_Port en_port,
 GPIO_Pin en_pin) {
@@ -53,6 +63,11 @@ GPIO_Pin en_pin) {
 	return lcd;
 }
 
+/**
+  * @brief Initialize the lcd
+  * @param[lcd] DisplayLCD object
+  * @retval None
+  */
 void lcd_init(DisplayLCD* lcd) {
 
 	lcd->cursor_pos[0] = 0;
@@ -65,8 +80,8 @@ void lcd_init(DisplayLCD* lcd) {
 	}
 
     HAL_Delay(15);
-	lcd_load(lcd,0x33,LARGE_DELAY,LOAD_INSTRUCTION);
-	lcd_load(lcd,0x32,LARGE_DELAY,LOAD_INSTRUCTION);
+	lcd_load(lcd,0x33,LONG_DELAY,LOAD_INSTRUCTION);
+	lcd_load(lcd,0x32,LONG_DELAY,LOAD_INSTRUCTION);
 
 	lcd_load(lcd,FUNCTION_SET | OPT_N,SHORT_DELAY,LOAD_INSTRUCTION);
 
@@ -76,6 +91,11 @@ void lcd_init(DisplayLCD* lcd) {
 	lcd_load(lcd,DISPLAY_ON_OFF_CONTROL | OPT_D | OPT_C | OPT_B,SHORT_DELAY,LOAD_INSTRUCTION);
 }
 
+/**
+  * @brief Clear the display
+  * @param[lcd] DisplayLCD object
+  * @retval None
+  */
 void lcd_clear_display(DisplayLCD* lcd) {
 	lcd_load(lcd,CLEAR_DISPLAY,MEDIUM_DELAY,LOAD_INSTRUCTION);
 
@@ -90,6 +110,11 @@ void lcd_clear_display(DisplayLCD* lcd) {
 
 }
 
+/**
+  * @brief Set the cursor position to (0,0)
+  * @param[lcd] DisplayLCD object
+  * @retval None
+  */
 void lcd_return_home(DisplayLCD* lcd) {
 	lcd_load(lcd,RETURN_HOME,MEDIUM_DELAY,LOAD_INSTRUCTION);
 
@@ -97,6 +122,12 @@ void lcd_return_home(DisplayLCD* lcd) {
 	lcd->cursor_pos[1] = 0;
 }
 
+/**
+  * @brief Shift the cursor position to left or right
+  * @param[lcd] DisplayLCD object
+  * @param[direction] Defines the direction of the shift
+  * @retval None
+  */
 void lcd_shift_cursor(DisplayLCD* lcd,Direction direction) {
 	Coordinates pos = {lcd->cursor_pos[0],lcd->cursor_pos[1]};
 
@@ -153,6 +184,11 @@ void lcd_shift_cursor(DisplayLCD* lcd,Direction direction) {
 	lcd_pos_cursor(lcd,pos);
 }
 
+/**
+  * @brief
+  * @param
+  * @retval
+  */
 void lcd_fast_shift(DisplayLCD* lcd,uint8_t direction,uint8_t
 		            times, uint16_t delay) {
 	for(uint8_t it=0;it<times;++it) {
@@ -162,6 +198,12 @@ void lcd_fast_shift(DisplayLCD* lcd,uint8_t direction,uint8_t
 	lcd_return_home(lcd);
 }
 
+/**
+  * @brief Shifts the display to left or right
+  * @param[lcd] DisplayLCD object
+  * @param[direction] Defines the direction of the shift
+  * @retval None
+  */
 void lcd_shift_display(DisplayLCD* lcd,Direction direction) {
 	DisplayMatrix original_display = lcd->display;
 	Coordinates original_pos = {lcd->cursor_pos[0],lcd->cursor_pos[1]};
@@ -179,6 +221,12 @@ void lcd_shift_display(DisplayLCD* lcd,Direction direction) {
 
 }
 
+/**
+  * @brief Shifts the display keeping the columns aligned
+  * @param[lcd] DisplayLCD object
+  * @param[direction] Defines the direction of the shift
+  * @retval None
+  */
 void lcd_shift_display_matrix(DisplayLCD* lcd, Direction direction) {
 	DisplayMatrix original_display = lcd->display;
 	Coordinates original_pos = {lcd->cursor_pos[0],lcd->cursor_pos[1]};
@@ -214,6 +262,12 @@ void lcd_shift_display_matrix(DisplayLCD* lcd, Direction direction) {
 	lcd_shift_cursor(lcd, direction);
 }
 
+/**
+  * @brief Set the cursor position
+  * @param[lcd] DisplayLCD object
+  * @param[coordinates] Defines the row and column positions to place the cursor
+  * @retval None
+  */
 void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates) {
     lcd_load(lcd,SET_DDRAM_ADDR|(lcd_row_addresses[coordinates[1]]+
     coordinates[0]),SHORT_DELAY,LOAD_INSTRUCTION);
@@ -221,6 +275,12 @@ void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates) {
     lcd->cursor_pos[1] = coordinates[1];
 }
 
+/**
+  * @brief Set the cursor position
+  * @param[lcd] DisplayLCD object
+  * @param[coordinates] Defines the row and column positions to place the cursor
+  * @retval None
+  */
 void lcd_display_matrix(DisplayLCD* lcd) {
 	Coordinates old_pos = {lcd->cursor_pos[0],
 	lcd->cursor_pos[1]};
@@ -234,6 +294,12 @@ void lcd_display_matrix(DisplayLCD* lcd) {
 	lcd_pos_cursor(lcd,old_pos);
 }
 
+/**
+  * @brief Writes a string to the LCD on the current position
+  * @param[lcd] DisplayLCD object
+  * @param[string] String that will be written
+  * @retval None
+  */
 void lcd_write_data(DisplayLCD* lcd,char* string) {
 	for(uint8_t i = 0; i < strlen(string); i++) {
 		lcd_load(lcd, string[i], SHORT_DELAY, LOAD_DATA);
@@ -242,8 +308,39 @@ void lcd_write_data(DisplayLCD* lcd,char* string) {
 	}
 }
 
-///************************************** Static function definition **************************************/
+/**
+  * @brief
+  * @param
+  * @retval
+  */
+void lcd_define_char(DisplayLCD* lcd, uint8_t code, uint8_t bitmap[]) {
+	lcd_load(lcd, SETCGRAM_ADDR + (code << 3), LONG_DELAY, LOAD_INSTRUCTION);
+	for(uint8_t i=0;i<8;++i){
+		lcd_load(lcd, bitmap[i], SHORT_DELAY, LOAD_DATA);
+	}
+}
 
+/**
+  * @brief Writes a float number to the LCD on the current position
+  * @param[lcd] DisplayLCD object
+  * @param[number] Float number that will be written
+  * @retval None
+  */
+void lcd_write_float(DisplayLCD* lcd, float number) {
+	char buffer[11];
+	sprintf(buffer,"%0.3f",number);
+	lcd_write_data(lcd, buffer);
+}
+
+///************************************** Static function definition **************************************/
+/**
+  * @brief Loads data and instructions in the LCD controller
+  * @param[lcd] DisplayLCD object
+  * @param[data] Data to be loaded
+  * @param[time] Delay required to complete the load
+  * @param[mode] Defines whether it is an instruction or data
+  * @retval None
+  */
 void lcd_load(DisplayLCD* lcd,uint8_t data,uint8_t time,
 		      LoadMode mode)
 {

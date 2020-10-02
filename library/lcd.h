@@ -1,6 +1,6 @@
 /*
  * ***************************************************************
- * file		: lcd.h
+ *  file		: lcd.h
  *  authors		: Elisa Bacelar, Gabriel Araújo
  *  date        : 09/29/20
  *  modified	: 09/29/20
@@ -37,44 +37,26 @@
 
 ///************************************** Command register **************************************/
 #define CLEAR_DISPLAY 0x01
-
 #define RETURN_HOME 0x02
-//
-//#define ENTRY_MODE_SET 0x04
-//#define OPT_S	0x01					// Shift entire display to right
-//#define OPT_INC 0x02					// Cursor increment
-//
 #define DISPLAY_ON_OFF_CONTROL 0x08
 #define OPT_D	0x04					// Turn on display
 #define OPT_C	0x02					// Turn on cursor
 #define OPT_B 	0x01					// Turn on cursor blink
-//
-#define CURSOR_SHIFT 0x10		// Move and shift cursor
+#define CURSOR_SHIFT 0x10				// Move and shift cursor
 #define DISPLAY_SHIFT 0x18
-//#define OPT_SC 0x08
-//#define OPT_RL 0x04
-//
 #define FUNCTION_SET 0x20
 #define OPT_DL 0x10						// Set interface data length
 #define OPT_N 0x08						// Set number of display lines
 #define OPT_F 0x04						// Set alternate font
-//#define SETCGRAM_ADDR 0x040
+#define SETCGRAM_ADDR 0x040
 #define SET_DDRAM_ADDR 0x80				// Set DDRAM address
 //
 //
 ///************************************** Helper macros **************************************/
 #define SHORT_DELAY 1
 #define MEDIUM_DELAY 2
-#define LARGE_DELAY 5
+#define LONG_DELAY 5
 
-
-///************************************** LCD defines **************************************/
-//#define LCD_NIB 4
-//#define LCD_BYTE 8
-//#define LCD_DATA_REG 1
-//#define LCD_COMMAND_REG 0
-//
-//
 ///************************************** LCD typedefs **************************************/
 typedef uint8_t Coordinates[2];
 typedef GPIO_TypeDef* GPIO_Port;
@@ -125,5 +107,7 @@ void lcd_shift_cursor(DisplayLCD* lcd,Direction direction);
 void lcd_shift_display(DisplayLCD* lcd,Direction direction);
 void lcd_shift_display_matrix(DisplayLCD* lcd, Direction direction);
 void lcd_write_data(DisplayLCD* lcd,char* string);
+void lcd_define_char(DisplayLCD* lcd, uint8_t code, uint8_t bitmap[]);
+void lcd_write_float(DisplayLCD* lcd, float number);
 
 #endif /* LCD_H */
