@@ -31,3 +31,10 @@ Writes a float number on the display in the current position of the cursor. To u
 Shifts everything that is written on the Display by one position to the left or to the right. The direction of the shift must be provided. 
 
 When shifting to the right, the character which is currently in the end of a row wil appear in the beggining of the next row. Likewise, when shifting to the left, a character in the beggining of a row wil appear in the end of the previous row.
+
+### void lcd_parallel_shift(DisplayLCD* lcd, Direction direction)
+Shifts all the rows of the Displau by one position to the left or to the right. The direction of the shift must be provided.
+
+The difference between lcd_parallel_shift and lcd_shift_display is that the former shifts all the rows in a parallel manner. That is, the characters allined in the same column will keep their allignement after the shift.
+
+A character in the beggining or end of a row will appear in the other end of the same row after a shift.
