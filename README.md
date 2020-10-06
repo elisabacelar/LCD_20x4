@@ -27,4 +27,7 @@ Writes *string* on the display in the current position of the cursor.
 ### void lcd_write_float(DisplayLCD* lcd, float number)
 Writes a float number on the display in the current position of the cursor. To use this function in Eclipse you should enable the flag Markup : `-u _printf_float`. This link explains how to do it: https://www.openstm32.org/forumthread3351
 
-###
+### void lcd_shift_display(DisplayLCD* lcd,Direction direction)
+Shifts everything that is written on the Display by one position to the left or to the right. The direction of the shift must be provided. 
+
+When shifting to the right, the character which is currently in the end of a row wil appear in the beggining of the next row. Likewise, when shifting to the left, a character in the beggining of a row wil appear in the end of the previous row.
