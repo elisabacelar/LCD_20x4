@@ -37,6 +37,55 @@ static void lcd_load(DisplayLCD* lcd, uint8_t data, uint8_t time, LoadMode mode)
 ///************************************** Function definitions **************************************/
 
 /**
+  * @brief Clear the display
+  * @param[lcd] DisplayLCD object
+  * @retval None
+  */
+void lcd_clear_display(DisplayLCD* lcd) {
+	lcd_load(lcd,CLEAR_DISPLAY,MEDIUM_DELAY,LOAD_INSTRUCTION);
+
+	lcd->cursor_pos[0] = 0;
+	lcd->cursor_pos[1] = 0;
+
+	for(uint8_t it=0;it<4;++it) {
+		for(uint8_t it2=0;it2<20;++it2) {
+			lcd->display.matrix[it][it2] = ' ';
+		}
+	}
+}
+
+/**
+  * @brief Prints the matrix (mirror) data to the display
+  * @param[lcd] DisplayLCD object
+  * @retval None
+  */
+void lcd_display_matrix(DisplayLCD* lcd) {
+	lcd_return_home(lcd);
+	for(uint8_t it=0;it<4;++it) {
+		for(uint8_t it2=0;it2<20;++it2) {
+			lcd_load(lcd,lcd->display.matrix[lcd_row_positions[it]][it2],SHORT_DELAY,LOAD_DATA);
+		}
+	}
+}
+
+/**
+  * @brief Shifts the display with its internal function
+  * @param[lcd] DisplayLCD object
+  * @param[direction] Direction of the shift
+  * @param[times] Number of shift steps
+  * @param[delay] Delay between each step
+  * @retval None
+  */
+void lcd_fast_shift(DisplayLCD* lcd,uint8_t direction,uint8_t
+		            times, uint16_t delay) {
+	for(uint8_t it=0;it<times;++it) {
+	    lcd_load(lcd,DISPLAY_SHIFT|(direction << 2),SHORT_DELAY,LOAD_INSTRUCTION);
+	    HAL_Delay(delay);
+	}
+	lcd_return_home(lcd);
+}
+
+/**
   * @brief Creates a new DisplayLCD
   * @param[port] Ports of the 4 input data pins
   * @param[pin] Input pins
@@ -92,22 +141,71 @@ void lcd_init(DisplayLCD* lcd) {
 }
 
 /**
-  * @brief Clear the display
+  * @brief Shifts the display keeping the columns aligned
   * @param[lcd] DisplayLCD object
+  * @param[direction] Defines the direction of the shift
   * @retval None
   */
-void lcd_clear_display(DisplayLCD* lcd) {
-	lcd_load(lcd,CLEAR_DISPLAY,MEDIUM_DELAY,LOAD_INSTRUCTION);
+void lcd_parallel_shift(DisplayLCD* lcd, Direction direction) {
+	DisplayMatrix original_display = lcd->display;
+	Coordinates original_pos = {lcd->cursor_pos[0],lcd->cursor_pos[1]};
+	lcd_clear_display(lcd);
+	char str[1];
 
-	lcd->cursor_pos[0] = 0;
-	lcd->cursor_pos[1] = 0;
-
-	for(uint8_t it=0;it<4;++it) {
-		for(uint8_t it2=0;it2<20;++it2) {
-			lcd->display.matrix[it][it2] = ' ';
+	switch(direction) {
+	case LEFT:
+		for(uint8_t i=0; i<4; ++i) {
+			lcd_pos_cursor(lcd,(Coordinates) {19,i});
+			str[0] = original_display.matrix[i][0];
+			lcd_write_data(lcd,str);
+			for(uint8_t j=0;j<19;++j) {
+				lcd_pos_cursor(lcd,(Coordinates) {j,i});
+				str[0] = original_display.matrix[i][j+1];
+				lcd_write_data(lcd,str);
+			}
+		}
+		break;
+	default:
+		for(uint8_t i=0; i<4; ++i) {
+			lcd_pos_cursor(lcd,(Coordinates) {0,i});
+			str[0] = original_display.matrix[i][19];
+			lcd_write_data(lcd,str);
+			for(uint8_t j=1;j<20;++j) {
+				lcd_pos_cursor(lcd,(Coordinates) {j,i});
+				str[0] = original_display.matrix[i][j-1];
+				lcd_write_data(lcd,str);
+			}
 		}
 	}
+	lcd_pos_cursor(lcd,original_pos);
+	lcd_shift_cursor(lcd, direction);
+}
 
+/**
+  * @brief Set the cursor position
+  * @param[lcd] DisplayLCD object
+  * @param[coordinates] Defines the row and column positions to place the cursor
+  * @retval None
+  */
+void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates) {
+    lcd_load(lcd,SET_DDRAM_ADDR|(lcd_row_addresses[coordinates[1]]+
+    coordinates[0]),SHORT_DELAY,LOAD_INSTRUCTION);
+    lcd->cursor_pos[0] = coordinates[0];
+    lcd->cursor_pos[1] = coordinates[1];
+}
+
+/**
+  * @brief Reads a value stored in the matrix (mirror)
+  * @param[lcd] DisplayLCD object
+  * @param[coordinates] Position to be read
+  * @param[mode] Whether to read from the current or the specified position
+  * @retval Character in the specified position [char]
+  */
+char lcd_read_from_matrix(DisplayLCD* lcd,Coordinates coordinates,PosConfig mode) {
+	if(mode==CURSOR_MODE) {
+		return lcd->display.matrix[lcd->cursor_pos[1]][lcd->cursor_pos[0]];
+	}
+	return lcd->display.matrix[coordinates[1]][coordinates[0]];
 }
 
 /**
@@ -120,6 +218,22 @@ void lcd_return_home(DisplayLCD* lcd) {
 
 	lcd->cursor_pos[0] = 0;
 	lcd->cursor_pos[1] = 0;
+}
+
+/**
+  * @brief Writes a character only to the matrix (mirror)
+  * @param[lcd] DisplayLCD object
+  * @param[coordinates] Position that will be written to
+  * @param[mode] Whether to write to the current or the specified position
+  * @param[character] Character to be written
+  * @retval None
+  */
+void lcd_set_to_matrix(DisplayLCD* lcd,Coordinates coordinates,PosConfig mode,char character) {
+	if(mode==SET_MODE) {
+	    lcd->display.matrix[coordinates[1]][coordinates[0]] = character;
+	} else {
+		lcd->display.matrix[lcd->cursor_pos[1]][lcd->cursor_pos[0]] = character;
+	}
 }
 
 /**
@@ -185,20 +299,6 @@ void lcd_shift_cursor(DisplayLCD* lcd,Direction direction) {
 }
 
 /**
-  * @brief
-  * @param
-  * @retval
-  */
-void lcd_fast_shift(DisplayLCD* lcd,uint8_t direction,uint8_t
-		            times, uint16_t delay) {
-	for(uint8_t it=0;it<times;++it) {
-	    lcd_load(lcd,DISPLAY_SHIFT|(direction << 2),SHORT_DELAY,LOAD_INSTRUCTION);
-	    HAL_Delay(delay);
-	}
-	lcd_return_home(lcd);
-}
-
-/**
   * @brief Shifts the display to left or right
   * @param[lcd] DisplayLCD object
   * @param[direction] Defines the direction of the shift
@@ -218,80 +318,19 @@ void lcd_shift_display(DisplayLCD* lcd,Direction direction) {
 	}
 	lcd_pos_cursor(lcd,original_pos);
 	lcd_shift_cursor(lcd, direction);
-
 }
 
 /**
-  * @brief Shifts the display keeping the columns aligned
+  * @brief Writes a character to the lcd
   * @param[lcd] DisplayLCD object
-  * @param[direction] Defines the direction of the shift
+  * @param[coordinates] Position that will be written to
+  * @param[character] Character to be written
   * @retval None
   */
-void lcd_shift_display_matrix(DisplayLCD* lcd, Direction direction) {
-	DisplayMatrix original_display = lcd->display;
-	Coordinates original_pos = {lcd->cursor_pos[0],lcd->cursor_pos[1]};
-	lcd_clear_display(lcd);
-	char str[1];
-
-	switch(direction) {
-	case LEFT:
-		for(uint8_t i=0; i<4; ++i) {
-			lcd_pos_cursor(lcd,(Coordinates) {19,i});
-			str[0] = original_display.matrix[i][0];
-			lcd_write_data(lcd,str);
-			for(uint8_t j=0;j<19;++j) {
-				lcd_pos_cursor(lcd,(Coordinates) {j,i});
-				str[0] = original_display.matrix[i][j+1];
-				lcd_write_data(lcd,str);
-			}
-		}
-		break;
-	default:
-		for(uint8_t i=0; i<4; ++i) {
-			lcd_pos_cursor(lcd,(Coordinates) {0,i});
-			str[0] = original_display.matrix[i][19];
-			lcd_write_data(lcd,str);
-			for(uint8_t j=1;j<20;++j) {
-				lcd_pos_cursor(lcd,(Coordinates) {j,i});
-				str[0] = original_display.matrix[i][j-1];
-				lcd_write_data(lcd,str);
-			}
-		}
-	}
-	lcd_pos_cursor(lcd,original_pos);
-	lcd_shift_cursor(lcd, direction);
-}
-
-/**
-  * @brief Set the cursor position
-  * @param[lcd] DisplayLCD object
-  * @param[coordinates] Defines the row and column positions to place the cursor
-  * @retval None
-  */
-void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates) {
-    lcd_load(lcd,SET_DDRAM_ADDR|(lcd_row_addresses[coordinates[1]]+
-    coordinates[0]),SHORT_DELAY,LOAD_INSTRUCTION);
-    lcd->cursor_pos[0] = coordinates[0];
-    lcd->cursor_pos[1] = coordinates[1];
-}
-
-/**
-  * @brief Set the cursor position
-  * @param[lcd] DisplayLCD object
-  * @param[coordinates] Defines the row and column positions to place the cursor
-  * @retval None
-  */
-void lcd_display_matrix(DisplayLCD* lcd) {
-	Coordinates old_pos = {lcd->cursor_pos[0],
-	lcd->cursor_pos[1]};
-	lcd_load(lcd,RETURN_HOME,MEDIUM_DELAY,LOAD_INSTRUCTION);
-	for(uint8_t it=0;it<4;++it) {
-		for(uint8_t it2=0;it2<20;++it2) {
-			lcd_load(lcd,lcd->display.matrix[lcd_row_positions[it]]
-			[it2],SHORT_DELAY,LOAD_DATA);
-	    }
-	}
-	lcd_pos_cursor(lcd,old_pos);
+void lcd_write_char(DisplayLCD* lcd,Coordinates coordinates, char character) {
+    lcd_pos_cursor(lcd,coordinates);
+	lcd->display.matrix[lcd->cursor_pos[1]][lcd->cursor_pos[0]]=character;
+	lcd_load(lcd, character, SHORT_DELAY, LOAD_DATA);
 }
 
 /**
@@ -309,18 +348,6 @@ void lcd_write_data(DisplayLCD* lcd,char* string) {
 }
 
 /**
-  * @brief
-  * @param
-  * @retval
-  */
-void lcd_define_char(DisplayLCD* lcd, uint8_t code, uint8_t bitmap[]) {
-	lcd_load(lcd, SETCGRAM_ADDR + (code << 3), LONG_DELAY, LOAD_INSTRUCTION);
-	for(uint8_t i=0;i<8;++i){
-		lcd_load(lcd, bitmap[i], SHORT_DELAY, LOAD_DATA);
-	}
-}
-
-/**
   * @brief Writes a float number to the LCD on the current position
   * @param[lcd] DisplayLCD object
   * @param[number] Float number that will be written
@@ -328,8 +355,8 @@ void lcd_define_char(DisplayLCD* lcd, uint8_t code, uint8_t bitmap[]) {
   */
 void lcd_write_float(DisplayLCD* lcd, float number) {
 	char buffer[11];
-	sprintf(buffer,"%0.3f",number);
-	lcd_write_data(lcd, buffer);
+	//sprintf(buffer,"%0.3f",number);
+	//lcd_write_data(lcd, buffer);
 }
 
 ///************************************** Static function definition **************************************/
