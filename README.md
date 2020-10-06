@@ -37,4 +37,4 @@ Shifts all the rows of the Displau by one position to the left or to the right. 
 
 The difference between lcd_parallel_shift and lcd_shift_display is that the former shifts all the rows in a parallel manner. That is, the characters allined in the same column will keep their allignement after the shift.
 
-A character in the beggining or end of a row will appear in the other end of the same row after a shift.
+When there is a shift to the right, the character in the end of a row goes to the beggining of the same row. When there is a shift to the left, the character in the beggining of a row goes to the end of the same row.
