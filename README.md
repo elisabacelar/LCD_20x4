@@ -1,16 +1,7 @@
 # LCD_20x4
 This a HD44780 20x4 LCD API for stm32 using STM32F4 HAL.
 
-        ## API functions ## 
-
-### void lcd_clear_display (DisplayLCD* lcd)
-Clears everything that is currently written on the Display and returns the cursor to (0,0).
-
-### void lcd_display_matrix (DisplayLCD* lcd)
-This function can be used to reprint the whole display using the mirror matrix as reference. As parameter, this function requires the LCD object, because the mirror matrix is stored inside it.
-
-### void lcd_fast_shift(DisplayLCD* lcd, uint8_t direction, uint8_t times, uint16_t delay)
-
+## API functions:
 ### DisplayLCD lcd_generate (GPIO_Port data_port[], GPIO_Pin data_pin[],GPIO_Port rs_port, GPIO_Pin rs_pin, GPIO_Port en_port,GPIO_Pin en_pin)
 This function instantiate a DisplayLCD object. In order to create the object, it is necessary to provide:
 * an array of GPIO_Port with the ports from the data pins;
@@ -20,8 +11,26 @@ This function instantiate a DisplayLCD object. In order to create the object, it
 * GPIO_Port of the enable pin (EN);
 * GPIO_Pin of the enable pin (EN).
 
-### void lcd_init(DisplayLCD* lcd)
-It is necessary to use this function to do the initial setup of display. The function first sends some signals to start the four-bit mode, then starts the display and the cursor. The only parameter required to use this function is the LCD object that will be configured.
+### void lcd_clear_display(DisplayLCD* lcd)
+Clears everything that is currently written on the Display and returns the cursor to (0,0).
+
+### void lcd_shift_cursor(DisplayLCD* lcd,Direction direction)
+Shifts the cursor in one position for the right or for the left. The direction of the switch must be provided. 
+
+In case the cursor is in the end of a row and is shifted to the right, it will be positioned in the beggining of the following row. If it is the last row, it will go all the way back to the beggining of the first row. Likewise, in case the cursor is in the beggining of a row and it is shifted to the left, it will be positioned in the end of the previous row, and if the current row is the first row of the display, the cursor will go to the end of the last row.
+
+### void lcd_fast_shift(DisplayLCD* lcd, uint8_t direction, uint8_t times, uint16_t delay)
+
+### void lcd_write_data(DisplayLCD* lcd,char* string)
+Writes *string* on the display in the current position of the cursor. 
+
+### void lcd_write_float(DisplayLCD* lcd, float number)
+Writes a float number on the display in the current position of the cursor. To use this function in Eclipse you should enable the flag Markup : `-u _printf_float`. This link explains how to do it: https://www.openstm32.org/forumthread3351
+
+### void lcd_shift_display(DisplayLCD* lcd,Direction direction)
+Shifts everything that is written on the Display by one position to the left or to the right. The direction of the shift must be provided. 
+
+When shifting to the right, the character which is currently in the end of a row wil appear in the beggining of the next row. Likewise, when shifting to the left, a character in the beggining of a row wil appear in the end of the previous row.
 
 ### void lcd_parallel_shift(DisplayLCD* lcd, Direction direction)
 Shifts all the rows of the Displau by one position to the left or to the right. The direction of the shift must be provided.
@@ -29,40 +38,3 @@ Shifts all the rows of the Displau by one position to the left or to the right. 
 The difference between lcd_parallel_shift and lcd_shift_display is that the former shifts all the rows in a parallel manner. That is, the characters allined in the same column will keep their allignement after the shift.
 
 When there is a shift to the right, the character in the end of a row goes to the beggining of the same row. When there is a shift to the left, the character in the beggining of a row goes to the end of the same row.
-
-### void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates)
-Moves the cursor cursor to a position passed as a parameter to the function. This position must be passed as a coordinate. In addition, the display on which the cursor is to be moved must be passed as an LCD object. This function differs from the lcd_shift_cursor because the latter only moves the cursor one position to the left or right while this function can move the cursor to any position on the display. Some writing functions start to write from the current cursor position (e.g. lcd_write_data). Therefore, using this to place the cursor in a position of interest can be useful before calling these other functions.
-
-### char lcd_read_from_matrix (DisplayLCD* lcd,Coordinates coordinates,PosConfig mode)
-Returns a character read from the mirror matrix. With this function, it is possible to eigther use the current position of the cursor or specify a position of the display to retrieve the character stored in it. To use it, it is necessary to pass the LCD object that will be read, the position to be read and a flag to indicate whether the passed position should be used or not. If not, the function will use the cursor position.
-
-### void lcd_return_home (DisplayLCD* lcd)
-Useful function to establish a known state of the LCD. The function sets the cursor position and the origin of the display to the upper left corner of the screen. It does not change the cursor data, but can move it if the LCD origin is not in the upper left corner. The function requires the LCD object to which it will apply.
-
-### void lcd_set_to_matrix (DisplayLCD* lcd,Coordinates coordinates,PosConfig mode,char character)
-It is quite unusual to use the mirror matrix to store data without displaying it on the LCD. However, if an application requires that, this function can be used to add data only to the matrix. The position in which the data will be inserted can be specified or not. In the negative situation, the function will use the cursor position. The parameters required by the function are the LCD object, whose matrix will be used, the coordinates where the data will be stored, the character that will be written to the matrix and a flag to indicate whether the cursor position or the position set will be used. Note that some functions use the mirror matrix to print data on the LCD (e.g. lcd_parallel_shift, lcd_display_matrix, lcd_shift_display). Therefore, if the information stored in the matrix cannot be displayed on the LCD, these functions should not be used in conjunction with this one.
-
-### void lcd_shift_cursor(DisplayLCD* lcd,Direction direction)
-Shifts the cursor in one position for the right or for the left. The direction of the switch must be provided. 
-
-In case the cursor is in the end of a row and is shifted to the right, it will be positioned in the beggining of the following row. If it is the last row, it will go all the way back to the beggining of the first row. Likewise, in case the cursor is in the beggining of a row and it is shifted to the left, it will be positioned in the end of the previous row, and if the current row is the first row of the display, the cursor will go to the end of the last row.
-
-### void lcd_shift_display(DisplayLCD* lcd,Direction direction)
-Shifts everything that is written on the Display by one position to the left or to the right. The direction of the shift must be provided. 
-
-### void lcd_write_char(DisplayLCD* lcd,Coordinates coordinates,char character)
-Writes a character to the LCD and to the mirror matrix. Passing a char to the string in the lcd_write_data results in unexpected behaviour. This function exists to give support to that sittuation then. Also, it is usefull to write special characters to the LCD if it is used together with the defined special characters names in the .h. The parameters of this function include the LCD object that will be written to, the position (coordinates) where the character should be written and the character itself.
-
-### void lcd_write_data(DisplayLCD* lcd,char* string)
-Writes *string* on the display in the current position of the cursor.
-
-When shifting to the right, the character which is currently in the end of a row wil appear in the beggining of the next row. Likewise, when shifting to the left, a character in the beggining of a row wil appear in the end of the previous row.
-
-### void lcd_write_float(DisplayLCD* lcd, float number)
-Writes a float number on the display in the current position of the cursor. To use this function in Eclipse you should enable the flag Markup : `-u _printf_float`. This link explains how to do it: https://www.openstm32.org/forumthread3351
-
-        ## Non-public functions ##
-
-### void lcd_load(DisplayLCD* lcd,uint8_t data,uint8_t time,LoadMode mode)
-This function is not in the .h because it is not necessary to understand it to use the API. Understanding this function is useful for improving it or making changes to the API. It basically divides a given instruction / data into 2 nibbles and sends them together with the necessary signals to load that instruction / data to the LCD. Also, it applies the necessary delay for each command to take effect. The instructions / data need to be divided into 2 nibbles because, in this API, the LCD is working in 4-bit mode. For it to work, it is necessary to pass the LCD object that will be used, the instruction / data that will be loaded on it, the amount of delay required for that command and a flag to indicate whether the signal in the data parameter is instruction or data.
-

@@ -57,9 +57,9 @@
 #define LCD_BETA 0xE2                       //β
 #define LCD_BLACK_RECTANGLE 0xFF            //◼️
 #define LCD_DIVISION_SIGN 0xFD              //÷
-#define LCD_EPSILON 0xE3                    //ε
+#define LCD_EPSILON 0xE3                     //ε
 #define LCD_INFINITY 0xF3                   //∞
-#define LCD_LEFT_ARROW 0x7F                 //￩
+#define LCD_LEFT_ARROW 0x7F                  //￩
 #define LCD_MU 0xE4                         //μ
 #define LCD_OMEGA 0xF4                      //Ω
 #define LCD_PI 0xF7                         //π
@@ -125,7 +125,7 @@ DisplayLCD lcd_generate(GPIO_Port data_port[], GPIO_Pin data_pin[],
 		GPIO_Pin en_pin);
 void lcd_init(DisplayLCD* lcd);
 void lcd_parallel_shift(DisplayLCD* lcd, Direction direction);
-void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates);
+void lcd_pos_cursor(DisplayLCD* lcd,uint8_t coordinates[2]);
 char lcd_read_from_matrix(DisplayLCD* lcd,Coordinates coordinates,PosConfig mode);
 void lcd_return_home(DisplayLCD* lcd);
 void lcd_set_to_matrix(DisplayLCD* lcd,Coordinates coordinates,PosConfig mode,char character);
