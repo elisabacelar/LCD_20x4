@@ -133,7 +133,7 @@ The rows of the display are continuous. It means that, in case the string reache
 Writes a float number with three decimals on the display in the current position of the cursor.
 
 
-## API functions:
+## Non-public functions:
 
 ### void lcd_load(DisplayLCD* lcd,uint8_t data,uint8_t time,LoadMode mode)
 This function is not in lcd.h because it is not necessary to understand it to use the API. Understanding this function is useful for improving it or making changes to the API. It basically divides a given instruction / data into 2 nibbles and sends them together with the necessary signals to load that instruction / data to the LCD. Also, it applies the necessary delay for each command to take effect. The instructions / data need to be divided into 2 nibbles because, in this API, the LCD is working in 4-bit mode. For it to work, it is necessary to pass the LCD object that will be used, the instruction / data that will be loaded on it, the amount of delay required for that command and a flag to indicate whether the signal in the data parameter is instruction or data.
