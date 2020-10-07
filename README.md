@@ -30,7 +30,7 @@ This function can be used to reprint the whole display using the mirror matrix a
 ### void lcd_fast_shift(DisplayLCD* lcd, uint8_t direction, uint8_t times, uint16_t delay)
 Performs the shift instruction from the HD44780.The direction of the shift, the number of shifted positions and the delay applied between those shifts must be provided.
 
-This shift is performed much faster than the other display shift functions (lcd_parallel_shift and lcd_shift_display). 
+This shift is performed much faster than lcd_shift_display, since it is an operation from the controller. 
 
 For this function, there are two sets of rows treated separately: ROW 0 together with ROW 2, and ROW 1 together with ROW 3. Within each set, the rows are arrangeded in a continuous and cyclic manner. That is, after reaching the end of a row, the cursor will go to the beggining of the other row of the set.
 
@@ -63,27 +63,6 @@ This function instantiate a DisplayLCD object. In order to create the object, it
 ### void lcd_init(DisplayLCD* lcd)
 It is necessary to use this function to do the initial setup of display. The function first sends some signals to start the four-bit mode, then starts the display and the cursor. The only parameter required to use this function is the LCD object that will be configured.
 
-### void lcd_parallel_shift(DisplayLCD* lcd, Direction direction)
-Shifts all the rows of the Display in parallel by one position to the left or to the right. The direction of the shift must be provided.
-
-In this case, the rows are not continuous and a row is cyclic with respect to itself. That is, a character that is the end of a row, when shifted to the right, will appear in the beggining of the same row.
-
-**Example:**
-|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|1|
-|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|2|
-|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|3|
-
-```
-lcd_shift_parallel_shift(&lcd,RIGHT);
-```
-|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|1|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
-|2|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
-|3|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
-
 ### void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates)
 Moves the cursor cursor to a position passed as a parameter to the function. This position must be passed as a coordinate. In addition, the display on which the cursor is to be moved must be passed as an LCD object. This function differs from the lcd_shift_cursor because the latter only moves the cursor one position to the left or right while this function can move the cursor to any position on the display. Some writing functions start to write from the current cursor position (e.g. lcd_write_data). Therefore, using this to place the cursor in a position of interest can be useful before calling these other functions.
 
@@ -94,7 +73,7 @@ Returns a character read from the mirror matrix. With this function, it is possi
 Useful function to establish a known state of the LCD. The function sets the cursor position and the origin of the display to the upper left corner of the screen. It does not change the cursor data, but can move it if the LCD origin is not in the upper left corner. The function requires the LCD object to which it will apply.
 
 ### void lcd_set_to_matrix (DisplayLCD* lcd,Coordinates coordinates,PosConfig mode,char character)
-It is quite unusual to use the mirror matrix to store data without displaying it on the LCD. However, if an application requires that, this function can be used to add data only to the matrix. The position in which the data will be inserted can be specified or not. In the negative situation, the function will use the cursor position. The parameters required by the function are the LCD object, whose matrix will be used, the coordinates where the data will be stored, the character that will be written to the matrix and a flag to indicate whether the cursor position (CURSOR_MODE) or the position set (SET_MODE) will be used. Note that some functions use the mirror matrix to print data on the LCD (e.g. lcd_parallel_shift, lcd_display_matrix, lcd_shift_display). Therefore, if the information stored in the matrix cannot be displayed on the LCD, these functions should not be used in conjunction with this one. 
+It is quite unusual to use the mirror matrix to store data without displaying it on the LCD. However, if an application requires that, this function can be used to add data only to the matrix. The position in which the data will be inserted can be specified or not. In the negative situation, the function will use the cursor position. The parameters required by the function are the LCD object, whose matrix will be used, the coordinates where the data will be stored, the character that will be written to the matrix and a flag to indicate whether the cursor position (CURSOR_MODE) or the position set (SET_MODE) will be used. Note that some functions use the mirror matrix to print data on the LCD (e.g. lcd_display_matrix, lcd_shift_display). Therefore, if the information stored in the matrix cannot be displayed on the LCD, these functions should not be used in conjunction with this one. 
 
 ### void lcd_shift_cursor(DisplayLCD* lcd,Direction direction)
 Shifts the cursor in one position for the right or for the left. The direction of the switch must be provided.
