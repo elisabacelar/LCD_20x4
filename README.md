@@ -81,7 +81,7 @@ Shifts the cursor in one position for the right or for the left. The direction o
 ### void lcd_shift_display(DisplayLCD* lcd,Direction direction)
 Shifts what is written on the Display by one position to the left or to the right. The direction of the shift must be provided. 
 
-For this shift, all rows are continuous and cyclic. That is, when the string reaches the end of a row, it continues on the following row, and if it happens in the last row, it goes all the way back to the first row.
+This function is much slower than lcd_fast_shift. However, for this shift, all four rows are continuous and cyclic. That is, when the string reaches the end of a row, it continues on the following row, and if it happens in the last row, it goes all the way back to the first row.
 
 **Example:**
 |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
