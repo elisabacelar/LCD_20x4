@@ -91,6 +91,9 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  // Initialization
+
   GPIO_Port ports[] = {D4_GPIO_Port, D5_GPIO_Port, D6_GPIO_Port, D7_GPIO_Port};
   GPIO_Pin pins[] = {D4_Pin, D5_Pin, D6_Pin, D7_Pin};
 
@@ -98,18 +101,48 @@ int main(void)
 
   lcd_init(&lcd);
 
+  // Writing a string
+
   lcd_write_data(&lcd,"Hello World!");
 
   HAL_Delay(5000);
 
-  for(int i = 0; i < 8; i++) {
-	  lcd_shift_display(&lcd, RIGHT);
-	  HAL_Delay(100);
+  // Shifting cursor
+
+  for(int i = 0; i < 3; i++) {
+	  lcd_shift_cursor(&lcd,RIGHT);
+	  HAL_Delay(1000);
   }
+
+  HAL_Delay(2000);
+
+  // Writing another string
+
+  lcd_write_data(&lcd,":)");
 
   HAL_Delay(5000);
 
+  // Reading the first character and then writing in another position
+
+  char h = lcd_read_from_matrix (&lcd,(Coordinates) {0,0},SET_MODE);
+
+  lcd_write_char(&lcd, (Coordinates) {3,3}, h);
+
+  HAL_Delay(5000);
+
+  // Returning the cursor to (0,0)
+
+  lcd_return_home (&lcd);
+
+  HAL_Delay(5000);
+
+  // Clearing the display
+
   lcd_clear_display(&lcd);
+
+  HAL_Delay(1000);
+
+  // Writing special character, normal characters and a float
 
   lcd_write_char(&lcd, (Coordinates) {0,0}, LCD_PI);
   lcd_write_char(&lcd, (Coordinates) {1,0}, '=');
@@ -118,7 +151,55 @@ int main(void)
 
   HAL_Delay(5000);
 
+  // Clearing the display
+
   lcd_clear_display(&lcd);
+
+  HAL_Delay(1000);
+
+  // Performing slow display shift
+
+  lcd_pos_cursor(&lcd, (Coordinates) {1,1});
+
+  HAL_Delay(1000);
+
+  lcd_write_data(&lcd,"Slow shift display");
+
+  HAL_Delay(5000);
+
+  for(int i = 0; i < 20; i++) {
+	  lcd_shift_display(&lcd, RIGHT);
+	  HAL_Delay(500);
+  }
+
+  HAL_Delay(5000);
+
+  // Clearing the display
+
+  lcd_clear_display(&lcd);
+
+  HAL_Delay(1000);
+
+  // Performing fast display shift under the same conditions of the former shift
+
+  lcd_pos_cursor(&lcd, (Coordinates) {1,1});
+
+  HAL_Delay(1000);
+
+  lcd_write_data(&lcd,"Fast shift display");
+
+  HAL_Delay(5000);
+
+  lcd_fast_shift(&lcd, RIGHT ,20, 500);
+
+  // Clearing the display
+
+  lcd_clear_display(&lcd);
+
+  HAL_Delay(1000);
+
+  // Setting the matrix before displaying it
+  // Drawing a triangle
 
   lcd_set_to_matrix(&lcd,(Coordinates) {8,0}, SET_MODE, '*');
   lcd_set_to_matrix(&lcd,(Coordinates) {7,1}, SET_MODE, '*');
@@ -133,14 +214,23 @@ int main(void)
   lcd_set_to_matrix(&lcd,(Coordinates) {10,2}, SET_MODE, '*');
   lcd_set_to_matrix(&lcd,(Coordinates) {9,1}, SET_MODE, '*');
 
+  // Displaying the triangle
+
   lcd_display_matrix(&lcd);
 
   HAL_Delay(5000);
 
+  // Clearing the display
+
   lcd_clear_display(&lcd);
+
+  // Writing a string
+
   lcd_write_data(&lcd,"Goodbye!");
 
   HAL_Delay(5000);
+
+  // Clearing the display
 
   lcd_clear_display(&lcd);
 

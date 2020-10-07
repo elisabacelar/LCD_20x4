@@ -1,10 +1,24 @@
 /*
  * ***************************************************************
+ *  API name    : LCD20X4
+ *  API files   : lcd.c, lcd.h
  *  file		: lcd.h
  *  authors		: Elisa Bacelar, Gabriel Araújo
+ *  university  : Federal University of Minas Gerais
+ *  license     : GNU General Public License v3.0
  *  date        : 09/29/20
  *  modified	: 09/29/20
  *  This code implements a library for LCD 20x4
+ *
+ *  This API was developed as an assignment for Embedded Systems
+ *  Programming class at the Federal University of Minas Gerais
+ ***************************************************************
+ *  SOFTWARE SETUP:
+ *  Include lcd.h in main.c
+ *
+ *  Enable the flag -u _printf_float in System Workbench for STM32.
+ *  More information in: https://www.openstm32.org/forumthread3351
+ *
  ***************************************************************
  *  HARDWARE SETUP:
  *  VSS = GND
@@ -124,7 +138,6 @@ DisplayLCD lcd_generate(GPIO_Port data_port[], GPIO_Pin data_pin[],
 		GPIO_Port rs_port, GPIO_Pin rs_pin, GPIO_Port en_port,
 		GPIO_Pin en_pin);
 void lcd_init(DisplayLCD* lcd);
-void lcd_parallel_shift(DisplayLCD* lcd, Direction direction);
 void lcd_pos_cursor(DisplayLCD* lcd,Coordinates coordinates);
 char lcd_read_from_matrix(DisplayLCD* lcd,Coordinates coordinates,PosConfig mode);
 void lcd_return_home(DisplayLCD* lcd);

@@ -1,10 +1,24 @@
 /*
  * ***************************************************************
- * 	file		: lcd.c
+ *  API name    : LCD20X4
+ *  API files   : lcd.c, lcd.h
+ *  file		: lcd.h
  *  authors		: Elisa Bacelar, Gabriel Araújo
+ *  university  : Federal University of Minas Gerais
+ *  license     : GNU General Public License v3.0
  *  date        : 09/29/20
  *  modified	: 09/29/20
  *  This code implements a library for LCD 20x4
+ *
+ *  This API was developed as an assignment for Embedded Systems
+ *  Programming class at the Federal University of Minas Gerais
+ ***************************************************************
+ *  SOFTWARE SETUP:
+ *  Include lcd.h in main.c
+ *
+ *  Enable the flag -u _printf_float in System Workbench for STM32.
+ *  More information in: https://www.openstm32.org/forumthread3351
+ *
  ***************************************************************
  *  HARDWARE SETUP:
  *  VSS = GND
@@ -138,47 +152,6 @@ void lcd_init(DisplayLCD* lcd) {
 	lcd_load(lcd,CLEAR_DISPLAY,MEDIUM_DELAY,LOAD_INSTRUCTION);
 
 	lcd_load(lcd,DISPLAY_ON_OFF_CONTROL | OPT_D | OPT_C | OPT_B,SHORT_DELAY,LOAD_INSTRUCTION);
-}
-
-/**
-  * @brief Shifts the display keeping the columns aligned
-  * @param[lcd] DisplayLCD object
-  * @param[direction] Defines the direction of the shift
-  * @retval None
-  */
-void lcd_parallel_shift(DisplayLCD* lcd, Direction direction) {
-	DisplayMatrix original_display = lcd->display;
-	Coordinates original_pos = {lcd->cursor_pos[0],lcd->cursor_pos[1]};
-	lcd_clear_display(lcd);
-	char str[1];
-
-	switch(direction) {
-	case LEFT:
-		for(uint8_t i=0; i<4; ++i) {
-			lcd_pos_cursor(lcd,(Coordinates) {19,i});
-			str[0] = original_display.matrix[i][0];
-			lcd_write_data(lcd,str);
-			for(uint8_t j=0;j<19;++j) {
-				lcd_pos_cursor(lcd,(Coordinates) {j,i});
-				str[0] = original_display.matrix[i][j+1];
-				lcd_write_data(lcd,str);
-			}
-		}
-		break;
-	default:
-		for(uint8_t i=0; i<4; ++i) {
-			lcd_pos_cursor(lcd,(Coordinates) {0,i});
-			str[0] = original_display.matrix[i][19];
-			lcd_write_data(lcd,str);
-			for(uint8_t j=1;j<20;++j) {
-				lcd_pos_cursor(lcd,(Coordinates) {j,i});
-				str[0] = original_display.matrix[i][j-1];
-				lcd_write_data(lcd,str);
-			}
-		}
-	}
-	lcd_pos_cursor(lcd,original_pos);
-	lcd_shift_cursor(lcd, direction);
 }
 
 /**
