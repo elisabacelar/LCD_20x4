@@ -1,5 +1,7 @@
 # LCD_20x4
-This a HD44780 20x4 LCD API for stm32 using STM32F4 HAL.
+This a HD44780 20x4 LCD API for stm32 using STM32F4 HAL. It was created as an assignement for Embbeded Systems Programming class at the Federal University of Minas Gerais.
+
+**Attention:** To use this library in System Workbench for STM32 you must enable the flag `-u _printf_float`. This link explains how to do it: https://www.openstm32.org/forumthread3351
 
 ## API functions:
 ### DisplayLCD lcd_generate (GPIO_Port data_port[], GPIO_Pin data_pin[],GPIO_Port rs_port, GPIO_Pin rs_pin, GPIO_Port en_port,GPIO_Pin en_pin)
@@ -14,27 +16,80 @@ This function instantiate a DisplayLCD object. In order to create the object, it
 ### void lcd_clear_display(DisplayLCD* lcd)
 Clears everything that is currently written on the Display and returns the cursor to (0,0).
 
-### void lcd_shift_cursor(DisplayLCD* lcd,Direction direction)
-Shifts the cursor in one position for the right or for the left. The direction of the switch must be provided. 
-
-In case the cursor is in the end of a row and is shifted to the right, it will be positioned in the beggining of the following row. If it is the last row, it will go all the way back to the beggining of the first row. Likewise, in case the cursor is in the beggining of a row and it is shifted to the left, it will be positioned in the end of the previous row, and if the current row is the first row of the display, the cursor will go to the end of the last row.
-
-### void lcd_fast_shift(DisplayLCD* lcd, uint8_t direction, uint8_t times, uint16_t delay)
-
 ### void lcd_write_data(DisplayLCD* lcd,char* string)
 Writes *string* on the display in the current position of the cursor. 
 
+The rows of the display are continuous. It means that, in case the string reaches the end of a row, it continues in the following row. When it is in the last row, it continues in the first row. Therefore, the rows are not only continuous but cyclic. 
+
+### void lcd_shift_cursor(DisplayLCD* lcd,Direction direction)
+Shifts the cursor in one position for the right or for the left. The direction of the switch must be provided. 
+
+This shift is compliant to the continuous/cyclic arrangement of the rows.
+
 ### void lcd_write_float(DisplayLCD* lcd, float number)
-Writes a float number on the display in the current position of the cursor. To use this function in Eclipse you should enable the flag Markup : `-u _printf_float`. This link explains how to do it: https://www.openstm32.org/forumthread3351
+Writes a float number with three decimals on the display in the current position of the cursor.
 
 ### void lcd_shift_display(DisplayLCD* lcd,Direction direction)
 Shifts everything that is written on the Display by one position to the left or to the right. The direction of the shift must be provided. 
 
-When shifting to the right, the character which is currently in the end of a row wil appear in the beggining of the next row. Likewise, when shifting to the left, a character in the beggining of a row wil appear in the end of the previous row.
+This shift is compliant to the continuous/cyclic arrangement of the rows.
+
+**Example:**
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|_|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+
+```
+lcd_shift_display(&lcd,RIGHT);
+```
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|
+|E|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 
 ### void lcd_parallel_shift(DisplayLCD* lcd, Direction direction)
-Shifts all the rows of the Displau by one position to the left or to the right. The direction of the shift must be provided.
+Shifts the rows of the Display in parallel by one position to the left or to the right. The direction of the shift must be provided.
 
-The difference between lcd_parallel_shift and lcd_shift_display is that the former shifts all the rows in a parallel manner. That is, the characters allined in the same column will keep their allignement after the shift.
+This shift is not compliant to the continuos/cyclic arrangement of the rows. In this case, the rows are not continuous and a row is cyclic with respect to itself. 
+That is, a character that is the end of a row, when shifted to the right, will appear in the beggining of the same row.
 
-When there is a shift to the right, the character in the end of a row goes to the beggining of the same row. When there is a shift to the left, the character in the beggining of a row goes to the end of the same row.
+**Example:**
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|1|
+|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|2|
+|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|3|
+
+```
+lcd_shift_parallel_shift(&lcd,RIGHT);
+```
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|1|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
+|2|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
+|3|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
+
+### void lcd_fast_shift(DisplayLCD* lcd, uint8_t direction, uint8_t times, uint16_t delay)
+Performs the shift instruction from the HD44780.The direction of the shift, the number of shifted positions and the delay applied bwtween those shifts must be provided.
+
+This shift is performed much faster than the other display shift functions (lcd_parallel_shift and lcd_shift_display). It is not compliant to the continuos/cyclic arrangement of the rows. In this function, there are two sets of rows treated separately: ROW 0 together with ROW 2, and ROW 1 together with ROW 3. Within each set, the rows are arrangeded in a continuous and cyclic manner. 
+
+In this function, a shift is performed in each of the sets at the same time. The amount of shifts that are performed is defined by *times* and, between each shift operation, there is a delay defined by *delay*. In the end of the process, the display returns to its original state and the cursor goes to (0,0). 
+
+**Example:**
+|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|1|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|2|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+```
+lcd_fast_shift&lcd,RIGHT,1,1000);
+```
+|_|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|_|_|_|_|_|_|_|_|_|_|_|_|_|E|X|A|M|P|L|E|
+|1|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+|2|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
