@@ -6,6 +6,7 @@ This is a HD44780 20x4 LCD API for stm32 using STM32F4 HAL that supports 4 bit m
 
 ## Introduction
 This API was developed as a work in the discipline of Embedded Systems Programming at UFMG - Prof. Ricardo de Oliveira Duarte - Department of Electronic Engineering
+
 The Library is developed and tested with Stm32F401RE (Nucleo 64 board). You can check the examples given.
 
 ## Example
