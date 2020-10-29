@@ -1,6 +1,6 @@
 # LCD_20x4
 
-This a HD44780 20x4 LCD API for stm32 using STM32F4 HAL that supports 4 bit mode operation.
+This is a HD44780 20x4 LCD API for stm32 using STM32F4 HAL that supports 4 bit mode operation.
 
 **Attention:** To use this library in System Workbench for STM32 you must enable the flag `-u _printf_float`. This link explains how to do it: https://www.openstm32.org/forumthread3351
 
