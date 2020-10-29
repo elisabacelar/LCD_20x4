@@ -332,6 +332,18 @@ void lcd_write_float(DisplayLCD* lcd, float number) {
 	lcd_write_data(lcd, buffer);
 }
 
+/**
+  * @brief Writes an int number to the LCD on the current position
+  * @param[lcd] DisplayLCD object
+  * @param[number] Integer number that will be written
+  * @retval None
+  */
+void lcd_write_int(DisplayLCD* lcd, uint16_t number) {
+	char buffer[16];
+	sprintf(buffer,"%d",number);
+	lcd_write_data(lcd, buffer);
+}
+
 ///************************************** Static function definition **************************************/
 /**
   * @brief Loads data and instructions in the LCD controller

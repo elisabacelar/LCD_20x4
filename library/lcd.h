@@ -147,4 +147,5 @@ void lcd_shift_display(DisplayLCD* lcd,Direction direction);
 void lcd_write_char(DisplayLCD* lcd,Coordinates coordinates,char character);
 void lcd_write_data(DisplayLCD* lcd,char* string);
 void lcd_write_float(DisplayLCD* lcd, float number);
+void lcd_write_int(DisplayLCD* lcd, uint16_t number);
 #endif /* LCD_H */
